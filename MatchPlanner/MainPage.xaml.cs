@@ -1,25 +1,26 @@
-﻿namespace Matchplanner
+﻿using Matchplanner.Services;
+using Matchplanner.Pages;
+
+namespace Matchplanner;
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    private readonly IAuthService _authService;
+    public MainPage(IAuthService authService)
     {
-        int count = 0;
-
-        public MainPage()
-        {
-            InitializeComponent();
-        }
-
-        private void OnCounterClicked(object sender, EventArgs e)
-        {
-            count++;
-
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
-
-            SemanticScreenReader.Announce(CounterBtn.Text);
-        }
+        InitializeComponent();
+        _authService = authService;
     }
 
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        if (await _authService.IsUserAuthenticated())
+        {
+            await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+        }
+        else
+        {
+            await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
+        }
+    }
 }
