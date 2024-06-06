@@ -4,11 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Matchplanner.API.Services
 {
-    public interface IAuthService
-    {
-        Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginRequestDto loginDto, CancellationToken cancellationToken = default);
-    }
-
     public class AuthService(IDbContextFactory<MatchplannerContext> dbFactory)
     {
         public async Task<UserModel?> Login(string Email, string Password)
