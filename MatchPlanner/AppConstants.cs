@@ -2,8 +2,8 @@
 {
     public static class AppConstants
     {
-        public const string HttpClientName = "login-flow-http-client";
-        public const string AuthStorageKeyName = "login-flow-auth-key";
+        public const string HttpClientName = "matchplanner-http-client";
+        public const string AuthStorageKeyName = "matchplanner-auth-key";
 
     }
 }

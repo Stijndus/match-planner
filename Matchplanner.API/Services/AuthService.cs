@@ -1,39 +1,34 @@
 ﻿using Matchplanner.Shared.Models;
+using Matchplanner.WebApi;
+using Microsoft.EntityFrameworkCore;
 
 namespace Matchplanner.API.Services
 {
     public interface IAuthService
-{
-    Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginRequestDto loginDto, CancellationToken cancellationToken = default);
-}
-
-public sealed class AuthService : IAuthService
-{
-    private readonly ITokenService _tokenService;
-
-    public AuthService(ITokenService tokenService)
     {
-        _tokenService = tokenService;
+        Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginRequestDto loginDto, CancellationToken cancellationToken = default);
     }
 
-    public async Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginRequestDto loginDto, CancellationToken cancellationToken = default)
+    public class AuthService(IDbContextFactory<MatchplannerContext> dbFactory)
     {
-        // Inject UserRepo
-        // Get the User Info from Database
-        // Validate Password
-
-        var user = new LoggedInUser(Guid.NewGuid(), "Abhay Prince", "Admin", "useremail@fakegmail.com");
-
-        var jwt = _tokenService.GenerateJWT(user);
-        var authResponse = new AuthResponseDto
+        public async Task<UserModel?> Login(string Email, string Password)
         {
-            UserId = user.Id,
-            Email = user.Email,
-            Name = user.Name,
-            Role = user.Role,
-            Token = jwt
-        };
-        return ApiResponse<AuthResponseDto>.Success(authResponse);
+            var dbContext = await dbFactory.CreateDbContextAsync();
+
+            dbContext.EnsureSeedData();
+
+            return await dbContext.Users.SingleOrDefaultAsync(m => (m.Email == Email) & (m.Password == Password));
+        }
+
+
+        public async Task Register(UserModel user)
+        {
+            var dbContext = await dbFactory.CreateDbContextAsync();
+
+            dbContext.EnsureSeedData();
+
+            await dbContext.Users.AddAsync(user);
+            await dbContext.SaveChangesAsync();
+        }
     }
-}
 }

@@ -1,5 +1,6 @@
-using Matchplanner.API.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Matchplanner.WebApi;
+using Matchplanner.WebApi.Services;
+using Matchplanner.WebApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 internal class Program
@@ -9,8 +10,8 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Use an in memory database so you don't have to set anything up. SqlServer is better, though.
-        builder.Services.AddDbContextFactory<BioscoopContext>(
-            options => options.UseInMemoryDatabase("BioscoopDatabase"));
+        builder.Services.AddDbContextFactory<MatchplannerContext>(
+            options => options.UseInMemoryDatabase("MatchplannerDatabase"));
 
         // Add services to the container.
         builder.Services.AddSingleton<ITicketService, TicketService>();
@@ -32,19 +33,6 @@ internal class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-
-        builder.Services.AddAuthentication(x =>
-        {
-            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters =
-            TokenService.GetTokenValidationParameters(builder.Configuration);
-    });
-        builder.Services.AddTransient<ITokenService, TokenService>()
-                        .AddTransient<IAuthService, AuthService>();
 
         var app = builder.Build();
 
