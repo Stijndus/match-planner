@@ -1,4 +1,5 @@
 ﻿using Matchplanner.Shared.Models;
+using Matchplanner.Shared.DTO;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Net.Http.Json;
@@ -7,11 +8,8 @@ namespace Matchplanner.Services
 {
     public interface IAuthService
     {
-        Task<bool> IsUserAuthenticated();
-        Task<string?> LoginAsync(LoginRequestDto dto);
-        Task<AuthResponseDto?> GetAuthenticatedUserAsync();
-        Task<HttpClient> GetAuthenticatedHttpClientAsync();
-        void Logout();
+        Task<bool?> LoginAsync(LoginRequestDTO dto);
+        Task<bool?> isUserAuthenticated(string username, string password);
     }
 
     public class AuthService : IAuthService
@@ -23,65 +21,44 @@ namespace Matchplanner.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<bool> IsUserAuthenticated()
-        {
-            var serializedData = await SecureStorage.Default.GetAsync(AppConstants.AuthStorageKeyName);
-            return !string.IsNullOrWhiteSpace(serializedData);
-        }
-
-        public async Task<AuthResponseDto?> GetAuthenticatedUserAsync()
-        {
-            var serializedData = await SecureStorage.Default.GetAsync(AppConstants.AuthStorageKeyName);
-            if (!string.IsNullOrWhiteSpace(serializedData))
-            {
-                return JsonSerializer.Deserialize<AuthResponseDto>(serializedData);
-            }
-            return null;
-        }
-
-        public async Task<string?> LoginAsync(LoginRequestDto dto)
+        public async Task<bool?> LoginAsync(LoginRequestDTO dto)
         {
             var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
 
-            var response = await httpClient.PostAsJsonAsync<LoginRequestDto>("api/auth/login", dto);
+            var response = await httpClient.PostAsJsonAsync<LoginRequestDTO>("api/auth/login", dto);
 
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                ApiResponse<AuthResponseDto> authResponse =
-                    JsonSerializer.Deserialize<ApiResponse<AuthResponseDto>>(content, new JsonSerializerOptions
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                UserModel authResponse =
+                    JsonSerializer.Deserialize<UserModel>(content, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
-                if (authResponse.Status)
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                if (authResponse.Id != null)
                 {
-                    var serializedData = JsonSerializer.Serialize(authResponse.Data);
-                    await SecureStorage.Default.SetAsync(AppConstants.AuthStorageKeyName, serializedData);
+                    var serializedData = JsonSerializer.Serialize(authResponse);
+                    await SecureStorage.Default.SetAsync("email", JsonSerializer.Serialize(authResponse.Email));
+                    await SecureStorage.Default.SetAsync("password", JsonSerializer.Serialize(authResponse.Password));
+                    await SecureStorage.Default.SetAsync("user_id", JsonSerializer.Serialize(authResponse.Id));
+                    await SecureStorage.Default.SetAsync("team_id", JsonSerializer.Serialize(authResponse.TeamID));
                 }
                 else
                 {
-                    return authResponse.Errors.FirstOrDefault();
+                    return false;
                 }
             }
             else
             {
-                return "Error in logging in";
+                return false;
             }
-            return null;
+            return true;
         }
 
-        public void Logout() => SecureStorage.Default.Remove(AppConstants.AuthStorageKeyName);
+        public async Task<bool>
 
-        public async Task<HttpClient> GetAuthenticatedHttpClientAsync()
-        {
-            var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
-
-            var authenticatedUser = await GetAuthenticatedUserAsync();
-
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", authenticatedUser.Token);
-
-            return httpClient;
-        }
+        
     }
 }
