@@ -14,9 +14,6 @@ internal class Program
             options => options.UseInMemoryDatabase("MatchplannerDatabase"));
 
         // Add services to the container.
-        builder.Services.AddSingleton<ITicketService, TicketService>();
-        builder.Services.AddSingleton<IRoomService, RoomService>();
-        builder.Services.AddSingleton<IMovieService, MovieService>();
 
         // Add CORS configuration
         builder.Services.AddCors(options =>

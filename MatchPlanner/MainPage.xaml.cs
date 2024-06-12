@@ -13,8 +13,12 @@ public partial class MainPage : ContentPage
 
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
+
+        string email = await SecureStorage.GetAsync("email");
+        string password = await SecureStorage.GetAsync("password");
+
         base.OnNavigatedTo(args);
-        if (await _authService.IsUserAuthenticated())
+        if (await _authService.isUserAuthenticated(email, password))
         {
             await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
         }

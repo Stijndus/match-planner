@@ -1,4 +1,5 @@
-﻿using Matchplanner.Shared.Models;
+﻿using Matchplanner.Shared.DTO;
+using Matchplanner.Shared.Models;
 using Matchplanner.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,9 +12,9 @@ namespace Matchplanner.WebApi.Controllers;
     {
 
     [HttpPost("login")]
-    public async Task<UserModel?> Login(string email, string password)
+    public async Task<UserModel?> Login([FromBody] LoginRequestDTO dto)
     {
-        return await authService.Login(email, password);
+        return await authService.Login(dto.Email, dto.Password);
     }
 
     [HttpPost("register")]

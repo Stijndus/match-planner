@@ -1,11 +1,12 @@
 using Matchplanner.Services;
+using Matchplanner.Shared.DTO;
 
 namespace Matchplanner.Pages;
 public partial class LoginPage : ContentPage
 {
-    private readonly AuthService _authService;
+    private readonly IAuthService _authService;
 
-    public LoginPage(AuthService authService)
+    public LoginPage(IAuthService authService)
     {
         InitializeComponent();
         _authService = authService;
@@ -32,7 +33,7 @@ public partial class LoginPage : ContentPage
             // Navigate to the next page or perform actions upon successful login
             await DisplayAlert("Success", "Login successful!", "OK");
             // For example, navigate to HomePage:
-            // await Navigation.PushAsync(new HomePage());
+            await Navigation.PushAsync(new HomePage());
         }
         else
         {
@@ -44,7 +45,7 @@ public partial class LoginPage : ContentPage
     private Task<bool> AuthenticateUser(string username, string password)
     {
         // Simulate a real authentication call
-        return _authService.LoginAsync()
+        var loginRequest = new LoginRequestDTO { Email = username, Password = password };
+        return _authService.LoginAsync(loginRequest);
     }
-}
 }

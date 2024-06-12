@@ -1,7 +1,7 @@
 ﻿using Matchplanner.Pages;
 using Matchplanner.Services;
-using MetalPerformanceShaders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Matchplanner
 {
@@ -17,12 +17,14 @@ namespace Matchplanner
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
+            // Register IHttpClientFactory
+            builder.Services.AddHttpClient();
 
-            builder.Services.AddSingleton<IAuthService, AuthService>();
-            builder.Services.AddSingleton<MainPage>();
+            // Register AuthService as IAuthService
+            builder.Services.AddTransient<IAuthService, AuthService>();
+
+            // Register LoginPage
             builder.Services.AddTransient<LoginPage>();
-            builder.Services.AddTransient<UserService>();
-            builder.Services.AddTransient<UsersPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();
@@ -40,11 +42,6 @@ namespace Matchplanner
         {
             services.AddSingleton<IPlatformHttpMessageHandler>(_ =>
             {
-#if ANDROID
-            return new AndroidHttpMessageHandler();
-#elif IOS
-                return new IosHttpMessageHandler();
-#endif
                 return null;
             });
 

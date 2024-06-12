@@ -1,15 +1,16 @@
 ﻿using Matchplanner.Shared.Models;
 using Matchplanner.Shared.DTO;
-using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 
 namespace Matchplanner.Services
 {
     public interface IAuthService
     {
-        Task<bool?> LoginAsync(LoginRequestDTO dto);
-        Task<bool?> isUserAuthenticated(string username, string password);
+        Task<bool> LoginAsync(LoginRequestDTO dto);
+        Task<bool> isUserAuthenticated(string username, string password);
     }
 
     public class AuthService : IAuthService
@@ -21,9 +22,10 @@ namespace Matchplanner.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<bool?> LoginAsync(LoginRequestDTO dto)
+        public async Task<bool> LoginAsync(LoginRequestDTO dto)
         {
             var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
+            httpClient.BaseAddress = new Uri("http://localhost:5141/");
 
             var response = await httpClient.PostAsJsonAsync<LoginRequestDTO>("api/auth/login", dto);
 
@@ -57,8 +59,16 @@ namespace Matchplanner.Services
             return true;
         }
 
-        public async Task<bool>
+        public async Task<bool> isUserAuthenticated(string username, string password)
+        {
+            if (username != null && password != null)
+            {
+                return true;
 
-        
+            } else
+            {
+                return false;
+            }
+        }
     }
 }

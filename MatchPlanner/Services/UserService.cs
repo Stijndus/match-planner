@@ -13,26 +13,5 @@ namespace Matchplanner.Services
             _httpClientFactory = httpClientFactory;
             _authService = authService;
         }
-
-        public async Task<IEnumerable<UserDto>?> GetUsersAsync()
-        {
-            var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
-            var response = await httpClient.GetAsync("api/users");
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<UserDto>>>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-                return apiResponse.Data;
-            }
-            else
-            {
-                var statusCode = response.StatusCode;
-            }
-            return null;
-        }
     }
 }
